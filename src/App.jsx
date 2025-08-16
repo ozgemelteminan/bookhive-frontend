@@ -12,14 +12,15 @@ import Reports from './pages/Reports.jsx'
 function Shell() {
   const { user, logout } = useAuth()
   return (
-    <div className="min-h-screen">
+    <div className="min-h-screen flex flex-col">
+      {/* Header sabit */}
       <header className="sticky top-0 z-20 bg-white border-b">
         <div className="max-w-5xl mx-auto px-4 py-3 flex items-center justify-between">
           <Link 
             to="/dashboard" 
             className="flex items-center gap-3 text-3xl font-bold bg-gradient-to-r from-blue-600 to-indigo-700 bg-clip-text text-transparent"
           >
-            📚 BookHive  
+            📚 BookHive
           </Link>
           <nav className="flex items-center gap-5 text-sm">
             <Link to="/dashboard" className="hover:underline">Home</Link>
@@ -31,8 +32,13 @@ function Shell() {
           </nav>
         </div>
       </header>
-      <main className="max-w-5xl mx-auto px-4 py-8">
-        <Outlet />
+
+      {/* Gradient arka plan tüm sayfayı kaplar */}
+      <main className="flex-1 bg-gradient-to-r from-blue-50 to-indigo-100">
+        {/* İçerik ortalanmış + max genişlik */}
+        <div className="max-w-5xl mx-auto px-4 py-8 flex justify-center">
+          <Outlet />
+        </div>
       </main>
     </div>
   )
