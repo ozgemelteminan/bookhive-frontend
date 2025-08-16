@@ -1,19 +1,43 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import { api } from '../api.js'
 import { useAuth } from '../auth.jsx'
 
 export default function BorrowReturn() {
-  const { token } = useAuth()
+  const { token, user } = useAuth()
   const [studentId, setStudentId] = useState('')
+  const [studentName, setStudentName] = useState('')
   const [bookId, setBookId] = useState('')
   const [result, setResult] = useState('')
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
+  const [books, setBooks] = useState([])
 
+  // Login olan öğrencinin bilgilerini doldur
+  useEffect(() => {
+    if (user) {
+      if (user.id) setStudentId(user.id.toString())
+      if (user.fullName) setStudentName(user.fullName)
+    }
+  }, [user])
+
+  // Kitapları getir
+  useEffect(() => {
+    const fetchBooks = async () => {
+      try {
+        const res = await api('/api/Books', { method: 'GET', token })
+        setBooks(res)
+      } catch (e) {
+        console.error(e)
+      }
+    }
+    fetchBooks()
+  }, [token])
+
+  // Ödünç alma
   const doBorrow = async () => {
     setLoading(true); setError(''); setResult('')
     try {
-      const res = await api('/api/library/borrow', { 
+      const res = await api('/api/StudentBooks', { 
         method: 'POST', 
         body: { studentId, bookId }, 
         token 
@@ -26,15 +50,15 @@ export default function BorrowReturn() {
     }
   }
 
+  // İade
   const doReturn = async () => {
     setLoading(true); setError(''); setResult('')
     try {
-      const res = await api('/api/library/return', { 
-        method: 'POST', 
-        body: { studentId, bookId }, 
+      await api(`/api/StudentBooks/${bookId}`, { 
+        method: 'DELETE',
         token 
       })
-      setResult(JSON.stringify(res, null, 2))
+      setResult("Book returned successfully.")
     } catch (e) { 
       setError(e.message) 
     } finally { 
@@ -48,15 +72,17 @@ export default function BorrowReturn() {
       <div className="bg-white rounded-2xl shadow-lg p-6">
         <h2 className="text-xl font-bold text-gray-800 mb-4">📖 Borrow / Return</h2>
         <div className="grid md:grid-cols-3 gap-4">
+          {/* Öğrenci Adı */}
           <div>
-            <label className="block text-sm font-medium text-gray-700">Student ID</label>
+            <label className="block text-sm font-medium text-gray-700">Student Name</label>
             <input 
-              className="w-full mt-1 border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" 
-              value={studentId} 
-              onChange={e=>setStudentId(e.target.value)} 
-              placeholder="e.g. 123" 
+              className="w-full mt-1 border rounded-lg px-3 py-2 text-sm bg-gray-100 text-gray-700" 
+              value={studentName || "Fetching name..."} 
+              placeholder="Student Name"
+              readOnly 
             />
           </div>
+          {/* Kitap ID */}
           <div>
             <label className="block text-sm font-medium text-gray-700">Book ID</label>
             <input 
@@ -66,6 +92,7 @@ export default function BorrowReturn() {
               placeholder="e.g. 42" 
             />
           </div>
+          {/* Butonlar */}
           <div className="flex items-end gap-2">
             <button 
               onClick={doBorrow} 
@@ -92,6 +119,41 @@ export default function BorrowReturn() {
         <pre className="text-sm bg-gray-50 rounded-xl p-3 overflow-auto">
           {result || "No data yet."}
         </pre>
+      </div>
+
+      {/* Books */}
+      <div className="bg-white rounded-2xl shadow-lg p-6">
+        <h2 className="text-xl font-bold text-gray-800 mb-4">📚 Books</h2>
+        {books.length > 0 ? (
+          <div className="overflow-x-auto">
+            <table className="w-full text-sm border-collapse">
+              <thead>
+                <tr className="bg-gray-100 text-gray-700">
+                  <th className="px-4 py-2 text-left font-semibold">ID</th>
+                  <th className="px-4 py-2 text-left font-semibold">Title</th>
+                  <th className="px-4 py-2 text-left font-semibold">Author</th>
+                </tr>
+              </thead>
+              <tbody>
+                {books.map((book, i) => (
+                  <tr
+                    key={book.id}
+                    onClick={() => setBookId(book.id)}
+                    className={`cursor-pointer hover:bg-blue-50 transition ${
+                      i % 2 === 0 ? "bg-white" : "bg-gray-50"
+                    }`}
+                  >
+                    <td className="px-4 py-2 border-b">{book.id}</td>
+                    <td className="px-4 py-2 border-b font-medium text-gray-800">{book.title}</td>
+                    <td className="px-4 py-2 border-b text-gray-600">{book.author}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        ) : (
+          <p className="text-gray-600">No books available.</p>
+        )}
       </div>
     </div>
   )
