@@ -1,27 +1,27 @@
-
+// App.jsx
+import PrivateRoute from './PrivateRoute.jsx'
 import React from 'react'
-import { Routes, Route, Navigate, Link } from 'react-router-dom'
-import { AuthProvider, useAuth } from './auth.jsx'
+import { Routes, Route, Navigate, Outlet, Link } from 'react-router-dom'
+import { useAuth } from './auth.jsx'
 import Login from './pages/Login.jsx'
 import Register from './pages/Register.jsx'
 import Dashboard from './pages/Dashboard.jsx'
 import BorrowReturn from './pages/BorrowReturn.jsx'
 import Reports from './pages/Reports.jsx'
 
-function ProtectedRoute({ children }) {
-  const { token } = useAuth()
-  if (!token) return <Navigate to="/login" replace />
-  return children
-}
-
-function Shell({ children }) {
+function Shell() {
   const { user, logout } = useAuth()
   return (
     <div className="min-h-screen">
       <header className="sticky top-0 z-20 bg-white border-b">
         <div className="max-w-5xl mx-auto px-4 py-3 flex items-center justify-between">
-          <Link to="/dashboard" className="font-semibold">📚 Library</Link>
-          <nav className="flex items-center gap-3 text-sm">
+          <Link 
+            to="/dashboard" 
+            className="flex items-center gap-3 text-3xl font-bold bg-gradient-to-r from-blue-600 to-indigo-700 bg-clip-text text-transparent"
+          >
+            📚 BookHive  
+          </Link>
+          <nav className="flex items-center gap-5 text-sm">
             <Link to="/dashboard" className="hover:underline">Home</Link>
             <Link to="/borrow-return" className="hover:underline">Borrow & Return</Link>
             <Link to="/reports" className="hover:underline">Reports</Link>
@@ -31,25 +31,24 @@ function Shell({ children }) {
           </nav>
         </div>
       </header>
-      <main className="max-w-5xl mx-auto px-4 py-8">{children}</main>
+      <main className="max-w-5xl mx-auto px-4 py-8">
+        <Outlet />
+      </main>
     </div>
   )
 }
 
 export default function App() {
   return (
-    <AuthProvider>
-      <Routes>
-        <Route path="/login" element={<Login />} />
-        <Route path="/register" element={<Register />} />
-        <Route path="/" element={<Navigate to="/dashboard" replace />} />
-        <Route path="/" element={<ProtectedRoute><Shell /></ProtectedRoute>}>
-          <Route path="dashboard" element={<ProtectedRoute><Shell><Dashboard /></Shell></ProtectedRoute>} />
-          <Route path="borrow-return" element={<ProtectedRoute><Shell><BorrowReturn /></Shell></ProtectedRoute>} />
-          <Route path="reports" element={<ProtectedRoute><Shell><Reports /></Shell></ProtectedRoute>} />
-        </Route>
-        <Route path="*" element={<Navigate to="/dashboard" replace />} />
-      </Routes>
-    </AuthProvider>
+    <Routes>
+      <Route path="/login" element={<Login />} />
+      <Route path="/register" element={<Register />} />
+      <Route path="/" element={<PrivateRoute><Shell /></PrivateRoute>}>
+        <Route path="dashboard" element={<Dashboard />} />
+        <Route path="borrow-return" element={<BorrowReturn />} />
+        <Route path="reports" element={<Reports />} />
+      </Route>
+      <Route path="*" element={<Navigate to="/dashboard" replace />} />
+    </Routes>
   )
 }
