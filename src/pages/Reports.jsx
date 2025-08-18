@@ -6,6 +6,7 @@ import { useAuth } from "../auth.jsx";
 export default function Reports() {
   const { token, user } = useAuth();
   const [books, setBooks] = useState([]);
+  const [libraries, setLibraries] = useState([]);
   const [studentHistory, setStudentHistory] = useState([]);
   const [loading, setLoading] = useState(false);
   const [err, setErr] = useState("");
@@ -19,6 +20,10 @@ export default function Reports() {
         // tüm kitaplar
         const b = await api("/api/Books", { method: "GET", token });
         if (alive) setBooks(Array.isArray(b) ? b : []);
+
+        // tüm kütüphaneler
+        const libs = await api("/api/Libraries", { method: "GET", token });
+        if (alive) setLibraries(Array.isArray(libs) ? libs : []);
 
         // öğrenci geçmişi
         if (user?.id) {
@@ -36,6 +41,12 @@ export default function Reports() {
     })();
     return () => (alive = false);
   }, [token, user?.id]);
+
+  // kitapları libraryId'ye göre grupla
+  const booksByLibrary = libraries.map((lib) => ({
+    ...lib,
+    books: books.filter((b) => b.libraryId === lib.id),
+  }));
 
   return (
     <div className="w-full max-w-5xl bg-white rounded-2xl shadow-lg p-8 space-y-6">
@@ -102,29 +113,39 @@ export default function Reports() {
           <p>Loading…</p>
         ) : (
           <>
-            <p className="text-sm text-gray-700 mb-4">
-              Total books: <b>{books.length}</b>
-            </p>
-            <div className="overflow-auto rounded-xl border">
-              <table className="w-full text-sm text-left text-gray-700">
-                <thead className="bg-gray-100 text-gray-800">
-                  <tr>
-                    <th className="px-4 py-2">#</th>
-                    <th className="px-4 py-2">Title</th>
-                    <th className="px-4 py-2">Author</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {books.map((b) => (
-                    <tr key={b.id} className="border-t hover:bg-gray-50">
-                      <td className="px-4 py-2">{b.id}</td>
-                      <td className="px-4 py-2 font-medium">{b.title}</td>
-                      <td className="px-4 py-2">{b.author}</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
+            {booksByLibrary.map((lib) => (
+              <div key={lib.id} className="mb-6">
+                <h3 className="text-md font-semibold text-blue-600 mb-2">
+                  {lib.name} — {lib.location}
+                </h3>
+                {lib.books.length === 0 ? (
+                  <p className="text-sm text-gray-500">No books available.</p>
+                ) : (
+                  <div className="overflow-auto rounded-xl border">
+                    <table className="w-full text-sm text-left text-gray-700">
+                      <thead className="bg-gray-100 text-gray-800">
+                        <tr>
+                          <th className="px-4 py-2">#</th>
+                          <th className="px-4 py-2">Title</th>
+                          <th className="px-4 py-2">Author</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {lib.books.map((b) => (
+                          <tr key={b.id} className="border-t hover:bg-gray-50">
+                            <td className="px-4 py-2">{b.id}</td>
+                            <td className="px-4 py-2 font-medium">
+                              {b.title}
+                            </td>
+                            <td className="px-4 py-2">{b.author}</td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                )}
+              </div>
+            ))}
           </>
         )}
       </div>
