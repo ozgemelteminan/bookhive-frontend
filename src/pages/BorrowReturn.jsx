@@ -155,14 +155,37 @@ export default function BorrowReturn() {
       <div className="bg-white rounded-2xl shadow-lg p-6">
         <h2 className="text-xl font-bold text-gray-800 mb-4">📊 Active Borrows</h2>
         {studentBorrows.length > 0 ? (
-          <ul className="list-disc pl-5 text-sm text-gray-700">
-            {studentBorrows.map((x) => (
-              <li key={x.id}>
-                Record #{x.id} — Book #{x.bookId}{" "}
-                {x.bookTitle ? `— ${x.bookTitle}` : ""}
-              </li>
-            ))}
-          </ul>
+          <div className="overflow-x-auto">
+            <table className="w-full text-sm border-collapse">
+              <thead>
+                <tr className="bg-gray-100 text-gray-700">
+                  <th className="px-4 py-2 text-left font-semibold">Record #</th>
+                  <th className="px-4 py-2 text-left font-semibold">Book ID</th>
+                  <th className="px-4 py-2 text-left font-semibold">Title</th>
+                  <th className="px-4 py-2 text-left font-semibold">Borrow Date</th>
+                </tr>
+              </thead>
+              <tbody>
+                {studentBorrows.map((x, i) => (
+                  <tr
+                    key={x.id}
+                    className={i % 2 === 0 ? "bg-white" : "bg-gray-50"}
+                  >
+                    <td className="px-4 py-2 border-b">{x.id}</td>
+                    <td className="px-4 py-2 border-b">{x.bookId}</td>
+                    <td className="px-4 py-2 border-b font-medium text-gray-800">
+                      {x.bookTitle || "-"}
+                    </td>
+                    <td className="px-4 py-2 border-b text-gray-600">
+                      {x.borrowDate
+                        ? new Date(x.borrowDate).toLocaleDateString()
+                        : "-"}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
         ) : (
           <p className="text-gray-600">No active borrows.</p>
         )}
