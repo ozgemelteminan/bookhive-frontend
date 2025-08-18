@@ -115,7 +115,7 @@ export default function Reports() {
           <>
             {booksByLibrary.map((lib) => (
               <div key={lib.id} className="mb-6">
-                <h3 className="text-md font-semibold text-blue-600 mb-2">
+                <h3 className="text-md font-semibold text-black-600 mb-2">
                   {lib.name} — {lib.location}
                 </h3>
                 {lib.books.length === 0 ? (

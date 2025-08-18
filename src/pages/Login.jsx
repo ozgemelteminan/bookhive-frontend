@@ -1,28 +1,68 @@
-import React, { useState } from "react";
-import { useNavigate } from "react-router-dom";
-import { useAuth } from "../auth.jsx";
+import React, { useState } from "react"
+import { useNavigate, Link } from "react-router-dom"
+import { useAuth } from "../auth.jsx"
+
+// 🐝 Ortak Petek Overlay
+function HoneycombOverlay({
+  stroke = "#fff9c4",
+  strokeOpacity = 0.35,
+  globalOpacity = 0.22,
+  scale = 1,
+}) {
+  return (
+    <svg
+      aria-hidden
+      className="pointer-events-none absolute inset-0 w-full h-full"
+      xmlns="http://www.w3.org/2000/svg"
+      preserveAspectRatio="none"
+    >
+      <defs>
+        <pattern
+          id="honeycomb-login"
+          width={72 * scale}
+          height={62 * scale}
+          patternUnits="userSpaceOnUse"
+        >
+          <g fill="none" stroke={stroke} strokeOpacity={strokeOpacity} strokeWidth={1}>
+            <polygon points="24,2 48,15 48,39 24,52 0,39 0,15" />
+            <polygon points="60,2 84,15 84,39 60,52 36,39 36,15" />
+            <g transform="translate(36,31)">
+              <polygon points="24,2 48,15 48,39 24,52 0,39 0,15" />
+              <polygon points="-12,2 12,15 12,39 -12,52 -36,39 -36,15" />
+            </g>
+          </g>
+        </pattern>
+      </defs>
+      <rect width="100%" height="100%" fill="url(#honeycomb-login)" opacity={globalOpacity} />
+    </svg>
+  )
+}
 
 export default function Login() {
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [err, setErr] = useState("");
-  const { login } = useAuth();
-  const navigate = useNavigate();
+  const [email, setEmail] = useState("")
+  const [password, setPassword] = useState("")
+  const [err, setErr] = useState("")
+  const { login } = useAuth()
+  const navigate = useNavigate()
 
   const handleSubmit = async (e) => {
-    e.preventDefault();
-    setErr("");
+    e.preventDefault()
+    setErr("")
     try {
-      await login(email, password); // ✅ email gönderiyoruz
-      navigate("/dashboard");
+      await login(email, password)
+      navigate("/dashboard")
     } catch (e) {
-      setErr(e.message || "Login failed");
+      setErr(e.message || "Login failed")
     }
-  };
+  }
 
   return (
-    <div className="flex items-center justify-center min-h-screen bg-gradient-to-r from-blue-50 to-indigo-100">
-      <div className="w-full max-w-md bg-white rounded-2xl shadow-2xl p-8">
+    <div className="relative flex items-center justify-center min-h-screen overflow-hidden bg-gradient-to-br from-amber-600 via-orange-500 to-yellow-500">
+      {/* 🐝 Petek overlay */}
+      <HoneycombOverlay />
+
+      {/* Card */}
+      <div className="relative w-full max-w-md bg-white rounded-2xl shadow-2xl p-8">
         <h1 className="text-3xl font-bold text-center text-gray-800 mb-2">
           Welcome Back 👋
         </h1>
@@ -40,7 +80,7 @@ export default function Login() {
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               placeholder="Enter your email"
-              className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none"
+              className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-amber-500 focus:outline-none"
               required
             />
           </div>
@@ -54,7 +94,7 @@ export default function Login() {
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               placeholder="••••••••"
-              className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none"
+              className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-amber-500 focus:outline-none"
               required
             />
           </div>
@@ -63,7 +103,7 @@ export default function Login() {
 
           <button
             type="submit"
-            className="w-full bg-blue-600 text-white py-2 rounded-lg font-semibold hover:bg-blue-700 transition"
+            className="w-full bg-amber-500 text-white py-2 rounded-lg font-semibold hover:bg-amber-600 transition"
           >
             Login
           </button>
@@ -71,11 +111,11 @@ export default function Login() {
 
         <p className="mt-6 text-center text-sm text-gray-500">
           Don’t have an account?{" "}
-          <a href="/register" className="text-blue-600 hover:underline">
+          <Link to="/register" className="text-amber-600 hover:underline">
             Sign up
-          </a>
+          </Link>
         </p>
       </div>
     </div>
-  );
+  )
 }
