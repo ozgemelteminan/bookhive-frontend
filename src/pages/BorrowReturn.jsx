@@ -8,10 +8,10 @@ export default function BorrowReturn() {
   const [studentId, setStudentId] = useState("");
   const [studentName, setStudentName] = useState("");
   const [bookId, setBookId] = useState("");
-  const [result, setResult] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const [books, setBooks] = useState([]);
+  const [studentBorrows, setStudentBorrows] = useState([]);
 
   // Login olan öğrencinin bilgileri
   useEffect(() => {
@@ -33,13 +33,29 @@ export default function BorrowReturn() {
     return () => (alive = false);
   }, [token]);
 
+  // Öğrencinin aktif borrows bilgisini getir
+  useEffect(() => {
+    let alive = true;
+    (async () => {
+      try {
+        const sb = await api("/api/StudentBooks", { method: "GET", token });
+        const my = (Array.isArray(sb) ? sb : []).filter(
+          (x) => String(x.studentId) === String(user?.id)
+        );
+        if (alive) setStudentBorrows(my);
+      } catch (e) {
+        console.error(e);
+      }
+    })();
+    return () => (alive = false);
+  }, [token, user?.id, loading]); // borrow/return sonrası yenilensin
+
   // Borrow
   const doBorrow = async () => {
     setLoading(true);
     setError("");
-    setResult("");
     try {
-      const res = await api("/api/StudentBooks", {
+      await api("/api/StudentBooks", {
         method: "POST",
         body: {
           studentId: Number(studentId),
@@ -47,7 +63,6 @@ export default function BorrowReturn() {
         },
         token,
       });
-      setResult(JSON.stringify(res, null, 2));
     } catch (e) {
       setError(e.message);
     } finally {
@@ -59,7 +74,6 @@ export default function BorrowReturn() {
   const doReturn = async () => {
     setLoading(true);
     setError("");
-    setResult("");
     try {
       const all = await api("/api/StudentBooks", { method: "GET", token });
       const list = Array.isArray(all) ? all : [];
@@ -80,8 +94,6 @@ export default function BorrowReturn() {
         method: "DELETE",
         token,
       });
-
-      setResult("Book returned successfully.");
     } catch (e) {
       setError(e.message);
     } finally {
@@ -139,12 +151,21 @@ export default function BorrowReturn() {
         {!!error && <p className="text-sm text-red-600 mt-3">{error}</p>}
       </div>
 
-      {/* Result */}
+      {/* Active Borrows */}
       <div className="bg-white rounded-2xl shadow-lg p-6">
-        <h2 className="text-xl font-bold text-gray-800 mb-4">📊 Result</h2>
-        <pre className="text-sm bg-gray-50 rounded-xl p-3 overflow-auto min-h-[64px]">
-          {result || "No data yet."}
-        </pre>
+        <h2 className="text-xl font-bold text-gray-800 mb-4">📊 Active Borrows</h2>
+        {studentBorrows.length > 0 ? (
+          <ul className="list-disc pl-5 text-sm text-gray-700">
+            {studentBorrows.map((x) => (
+              <li key={x.id}>
+                Record #{x.id} — Book #{x.bookId}{" "}
+                {x.bookTitle ? `— ${x.bookTitle}` : ""}
+              </li>
+            ))}
+          </ul>
+        ) : (
+          <p className="text-gray-600">No active borrows.</p>
+        )}
       </div>
 
       {/* Books */}

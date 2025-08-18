@@ -8,6 +8,7 @@ import Register from './pages/Register.jsx'
 import Dashboard from './pages/Dashboard.jsx'
 import BorrowReturn from './pages/BorrowReturn.jsx'
 import Reports from './pages/Reports.jsx'
+import DonateBook from './pages/DonateBook.jsx'   // ✅ yeni sayfa import
 
 function Shell() {
   const { user, logout } = useAuth()
@@ -26,6 +27,7 @@ function Shell() {
             <Link to="/dashboard" className="hover:underline">Home</Link>
             <Link to="/borrow-return" className="hover:underline">Borrow & Return</Link>
             <Link to="/reports" className="hover:underline">Reports</Link>
+            <Link to="/donate" className="hover:underline">Donate</Link> {/* ✅ yeni link */}
             <div className="h-5 w-px bg-gray-300" />
             <span className="text-gray-600">{user?.username || user?.email}</span>
             <button className="btn-ghost" onClick={logout}>Logout</button>
@@ -53,6 +55,7 @@ export default function App() {
         <Route path="dashboard" element={<Dashboard />} />
         <Route path="borrow-return" element={<BorrowReturn />} />
         <Route path="reports" element={<Reports />} />
+        <Route path="donate" element={<DonateBook />} />  {/* ✅ yeni route */}
       </Route>
       <Route path="*" element={<Navigate to="/dashboard" replace />} />
     </Routes>
