@@ -1,24 +1,24 @@
-// src/pages/Login.jsx
-import React, { useState } from "react"
-import { useNavigate } from "react-router-dom"
-import { useAuth } from "../auth.jsx"
+import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { useAuth } from "../auth.jsx";
 
 export default function Login() {
-  const [username, setUsername] = useState("")
-  const [password, setPassword] = useState("")
-  const { login } = useAuth()
-  const navigate = useNavigate()
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [err, setErr] = useState("");
+  const { login } = useAuth();
+  const navigate = useNavigate();
 
-  const handleSubmit = (e) => {
-    e.preventDefault()
-
-    // Fake login for testting purposes
-    const fakeToken = "12345"
-    const fakeUser = { username }
-
-    login(fakeToken, fakeUser)
-    navigate("/dashboard")
-  }
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setErr("");
+    try {
+      await login(email, password); // ✅ email gönderiyoruz
+      navigate("/dashboard");
+    } catch (e) {
+      setErr(e.message || "Login failed");
+    }
+  };
 
   return (
     <div className="flex items-center justify-center min-h-screen bg-gradient-to-r from-blue-50 to-indigo-100">
@@ -33,13 +33,13 @@ export default function Login() {
         <form onSubmit={handleSubmit} className="space-y-5">
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">
-              Username
+              Email
             </label>
             <input
-              type="text"
-              value={username}
-              onChange={(e) => setUsername(e.target.value)}
-              placeholder="Enter your username"
+              type="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              placeholder="Enter your email"
               className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none"
               required
             />
@@ -59,6 +59,8 @@ export default function Login() {
             />
           </div>
 
+          {err && <p className="text-sm text-red-600">{err}</p>}
+
           <button
             type="submit"
             className="w-full bg-blue-600 text-white py-2 rounded-lg font-semibold hover:bg-blue-700 transition"
@@ -75,5 +77,5 @@ export default function Login() {
         </p>
       </div>
     </div>
-  )
+  );
 }

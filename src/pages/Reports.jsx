@@ -1,74 +1,89 @@
-import React, { useState } from 'react'
-import { api } from '../api.js'
-import { useAuth } from '../auth.jsx'
+// src/pages/Reports.jsx
+import React, { useEffect, useState } from "react";
+import { api } from "../api.js";
+import { useAuth } from "../auth.jsx";
 
 export default function Reports() {
-  const { token } = useAuth()
-  const [libraryReport, setLibraryReport] = useState(null)
-  const [studentId, setStudentId] = useState('')
-  const [studentReport, setStudentReport] = useState(null)
-  const [error, setError] = useState('')
-  const [loading, setLoading] = useState(false)
+  const { token, user } = useAuth();
+  const [books, setBooks] = useState([]);
+  const [studentBorrows, setStudentBorrows] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [err, setErr] = useState("");
 
-  const loadLibraryReport = async () => {
-    setLoading(true); setError('')
-    try {
-      const res = await api('/api/reports/library', { method: 'GET', token })
-      setLibraryReport(res)
-    } catch (e) { setError(e.message) } finally { setLoading(false) }
-  }
-
-  const loadStudentReport = async () => {
-    setLoading(true); setError('')
-    try {
-      const res = await api(`/api/reports/student/${studentId}`, { method: 'GET', token })
-      setStudentReport(res)
-    } catch (e) { setError(e.message) } finally { setLoading(false) }
-  }
+  useEffect(() => {
+    let alive = true;
+    (async () => {
+      setErr("");
+      setLoading(true);
+      try {
+        const b = await api("/api/Books", { method: "GET", token });
+        if (alive) setBooks(Array.isArray(b) ? b : []);
+        const sb = await api("/api/StudentBooks", { method: "GET", token });
+        const my = (Array.isArray(sb) ? sb : []).filter(
+          (x) => String(x.studentId) === String(user?.id)
+        );
+        if (alive) setStudentBorrows(my);
+      } catch (e) {
+        if (alive) setErr(e.message);
+      } finally {
+        if (alive) setLoading(false);
+      }
+    })();
+    return () => (alive = false);
+  }, [token, user?.id]);
 
   return (
-    <div className="w-full max-w-3xl space-y-6">
-      <h1 className="text-2xl font-bold text-gray-800">📊 Reports</h1>
+    <div className="flex items-center justify-center min-h-screen p-6 bg-gradient-to-r from-blue-50 to-indigo-100">
+      <div className="w-full max-w-3xl bg-white rounded-2xl shadow-lg p-8 space-y-6">
+        <h1 className="text-2xl font-bold text-gray-800">📊 Reports</h1>
 
-      {/* Library Report */}
-      <div className="border rounded-xl p-6 bg-white shadow hover:shadow-md transition">
-        <h2 className="text-lg font-semibold mb-3 text-gray-800">Library Report</h2>
-        <button 
-          onClick={loadLibraryReport} 
-          className="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600 transition disabled:opacity-50"
-          disabled={loading}
-        >
-          Search Library Report
-        </button>
-        <pre className="text-sm bg-gray-50 rounded-xl p-3 mt-3 overflow-auto">
-          {JSON.stringify(libraryReport, null, 2) || "—"}
-        </pre>
-      </div>
+        {err && <p className="text-sm text-red-600">{err}</p>}
 
-      {/* Student Report */}
-      <div className="border rounded-xl p-6 bg-white shadow hover:shadow-md transition">
-        <h2 className="text-lg font-semibold mb-3 text-gray-800">Student Report</h2>
-        <div className="flex gap-2">
-          <input 
-            className="border rounded-lg px-3 py-2 flex-1 focus:outline-none focus:ring-2 focus:ring-blue-400"
-            placeholder="Student ID" 
-            value={studentId} 
-            onChange={e=>setStudentId(e.target.value)} 
-          />
-          <button 
-            onClick={loadStudentReport} 
-            className="bg-indigo-500 text-white px-4 py-2 rounded-lg hover:bg-indigo-600 transition disabled:opacity-50"
-            disabled={loading || !studentId}
-          >
-            Search
-          </button>
+        <div className="border rounded-xl p-6 bg-white hover:shadow-md transition">
+          <h2 className="text-lg font-semibold mb-3 text-gray-800">Library Report</h2>
+          {loading ? (
+            <p>Loading…</p>
+          ) : (
+            <>
+              <p className="text-sm text-gray-700 mb-2">
+                Total books: <b>{books.length}</b>
+              </p>
+              <div className="max-h-56 overflow-auto bg-gray-50 rounded-xl p-3">
+                <ul className="list-disc pl-5 text-sm">
+                  {books.map((b) => (
+                    <li key={b.id}>
+                      #{b.id} — {b.title} <span className="text-gray-500">({b.author})</span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            </>
+          )}
         </div>
-        <pre className="text-sm bg-gray-50 rounded-xl p-3 mt-3 overflow-auto">
-          {JSON.stringify(studentReport, null, 2) || "—"}
-        </pre>
-      </div>
 
-      {error && <p className="text-sm text-red-600">{error}</p>}
+        <div className="border rounded-xl p-6 bg-white hover:shadow-md transition">
+          <h2 className="text-lg font-semibold mb-3 text-gray-800">Student Report</h2>
+          {loading ? (
+            <p>Loading…</p>
+          ) : (
+            <>
+              <p className="text-sm text-gray-700 mb-2">
+                Student: <b>{user?.fullName || user?.username}</b> — Active borrows:{" "}
+                <b>{studentBorrows.length}</b>
+              </p>
+              <div className="max-h-56 overflow-auto bg-gray-50 rounded-xl p-3">
+                <ul className="list-disc pl-5 text-sm">
+                  {studentBorrows.map((x) => (
+                    <li key={x.id}>
+                      Record #{x.id} — Book #{x.bookId} {x.bookTitle ? `— ${x.bookTitle}` : ""}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            </>
+          )}
+        </div>
+      </div>
     </div>
-  )
+  );
 }

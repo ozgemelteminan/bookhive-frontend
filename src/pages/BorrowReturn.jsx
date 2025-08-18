@@ -1,70 +1,93 @@
-import React, { useState, useEffect } from 'react'
-import { api } from '../api.js'
-import { useAuth } from '../auth.jsx'
+// src/pages/BorrowReturn.jsx
+import React, { useState, useEffect } from "react";
+import { api } from "../api.js";
+import { useAuth } from "../auth.jsx";
 
 export default function BorrowReturn() {
-  const { token, user } = useAuth()
-  const [studentId, setStudentId] = useState('')
-  const [studentName, setStudentName] = useState('')
-  const [bookId, setBookId] = useState('')
-  const [result, setResult] = useState('')
-  const [error, setError] = useState('')
-  const [loading, setLoading] = useState(false)
-  const [books, setBooks] = useState([])
+  const { token, user } = useAuth();
+  const [studentId, setStudentId] = useState("");
+  const [studentName, setStudentName] = useState("");
+  const [bookId, setBookId] = useState("");
+  const [result, setResult] = useState("");
+  const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [books, setBooks] = useState([]);
 
-  // Login olan öğrencinin bilgilerini doldur
+  // Login olan öğrencinin bilgileri
   useEffect(() => {
-    if (user) {
-      if (user.id) setStudentId(user.id.toString())
-      if (user.fullName) setStudentName(user.fullName)
-    }
-  }, [user])
+    setStudentId(user?.id ? String(user.id) : "");
+    setStudentName(user?.fullName || "");
+  }, [user]);
 
   // Kitapları getir
   useEffect(() => {
-    const fetchBooks = async () => {
+    let alive = true;
+    (async () => {
       try {
-        const res = await api('/api/Books', { method: 'GET', token })
-        setBooks(res)
+        const res = await api("/api/Books", { method: "GET", token });
+        if (alive) setBooks(Array.isArray(res) ? res : []);
       } catch (e) {
-        console.error(e)
+        console.error(e);
       }
-    }
-    fetchBooks()
-  }, [token])
+    })();
+    return () => (alive = false);
+  }, [token]);
 
-  // Ödünç alma
+  // Borrow
   const doBorrow = async () => {
-    setLoading(true); setError(''); setResult('')
+    setLoading(true);
+    setError("");
+    setResult("");
     try {
-      const res = await api('/api/StudentBooks', { 
-        method: 'POST', 
-        body: { studentId, bookId }, 
-        token 
-      })
-      setResult(JSON.stringify(res, null, 2))
-    } catch (e) { 
-      setError(e.message) 
-    } finally { 
-      setLoading(false) 
+      const res = await api("/api/StudentBooks", {
+        method: "POST",
+        body: {
+          studentId: Number(studentId),
+          bookId: Number(bookId),
+        },
+        token,
+      });
+      setResult(JSON.stringify(res, null, 2));
+    } catch (e) {
+      setError(e.message);
+    } finally {
+      setLoading(false);
     }
-  }
+  };
 
-  // İade
+  // Return
   const doReturn = async () => {
-    setLoading(true); setError(''); setResult('')
+    setLoading(true);
+    setError("");
+    setResult("");
     try {
-      await api(`/api/StudentBooks/${bookId}`, { 
-        method: 'DELETE',
-        token 
-      })
-      setResult("Book returned successfully.")
-    } catch (e) { 
-      setError(e.message) 
-    } finally { 
-      setLoading(false) 
+      const all = await api("/api/StudentBooks", { method: "GET", token });
+      const list = Array.isArray(all) ? all : [];
+      const match = list
+        .filter(
+          (x) =>
+            String(x.studentId) === String(studentId) &&
+            String(x.bookId) === String(bookId)
+        )
+        .sort((a, b) => (b.id ?? 0) - (a.id ?? 0))[0];
+
+      if (!match) {
+        throw new Error("This student has no active borrow for the selected book.");
+      }
+
+      // ✅ Backend {studentId}/{bookId} bekliyor
+      await api(`/api/StudentBooks/${studentId}/${bookId}`, {
+        method: "DELETE",
+        token,
+      });
+
+      setResult("Book returned successfully.");
+    } catch (e) {
+      setError(e.message);
+    } finally {
+      setLoading(false);
     }
-  }
+  };
 
   return (
     <div className="w-full max-w-3xl space-y-6">
@@ -72,51 +95,54 @@ export default function BorrowReturn() {
       <div className="bg-white rounded-2xl shadow-lg p-6">
         <h2 className="text-xl font-bold text-gray-800 mb-4">📖 Borrow / Return</h2>
         <div className="grid md:grid-cols-3 gap-4">
-          {/* Öğrenci Adı */}
           <div>
-            <label className="block text-sm font-medium text-gray-700">Student Name</label>
-            <input 
-              className="w-full mt-1 border rounded-lg px-3 py-2 text-sm bg-gray-100 text-gray-700" 
-              value={studentName || "Fetching name..."} 
+            <label className="block text-sm font-medium text-gray-700">
+              Student
+            </label>
+            <input
+              className="w-full mt-1 border rounded-lg px-3 py-2 text-sm bg-gray-100 text-gray-700"
+              value={studentName || ""}
               placeholder="Student Name"
-              readOnly 
+              readOnly
+              title={studentId ? `StudentId: ${studentId}` : undefined}
             />
           </div>
-          {/* Kitap ID */}
+
           <div>
             <label className="block text-sm font-medium text-gray-700">Book ID</label>
-            <input 
-              className="w-full mt-1 border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500" 
-              value={bookId} 
-              onChange={e=>setBookId(e.target.value)} 
-              placeholder="e.g. 42" 
+            <input
+              className="w-full mt-1 border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+              value={bookId}
+              onChange={(e) => setBookId(e.target.value)}
+              placeholder="e.g. 42"
+              inputMode="numeric"
             />
           </div>
-          {/* Butonlar */}
+
           <div className="flex items-end gap-2">
-            <button 
-              onClick={doBorrow} 
-              className="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600 transition disabled:opacity-50" 
-              disabled={loading}
+            <button
+              onClick={doBorrow}
+              className="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600 transition disabled:opacity-50"
+              disabled={loading || !studentId || !bookId}
             >
-              Borrow
+              {loading ? "Working…" : "Borrow"}
             </button>
-            <button 
-              onClick={doReturn} 
-              className="bg-gray-200 text-gray-700 px-4 py-2 rounded-lg hover:bg-gray-300 transition disabled:opacity-50" 
-              disabled={loading}
+            <button
+              onClick={doReturn}
+              className="bg-gray-200 text-gray-700 px-4 py-2 rounded-lg hover:bg-gray-300 transition disabled:opacity-50"
+              disabled={loading || !studentId || !bookId}
             >
-              Return
+              {loading ? "Working…" : "Return"}
             </button>
           </div>
         </div>
-        {error && <p className="text-sm text-red-600 mt-3">{error}</p>}
+        {!!error && <p className="text-sm text-red-600 mt-3">{error}</p>}
       </div>
 
       {/* Result */}
       <div className="bg-white rounded-2xl shadow-lg p-6">
         <h2 className="text-xl font-bold text-gray-800 mb-4">📊 Result</h2>
-        <pre className="text-sm bg-gray-50 rounded-xl p-3 overflow-auto">
+        <pre className="text-sm bg-gray-50 rounded-xl p-3 overflow-auto min-h-[64px]">
           {result || "No data yet."}
         </pre>
       </div>
@@ -142,9 +168,12 @@ export default function BorrowReturn() {
                     className={`cursor-pointer hover:bg-blue-50 transition ${
                       i % 2 === 0 ? "bg-white" : "bg-gray-50"
                     }`}
+                    title="Click to fill Book ID"
                   >
                     <td className="px-4 py-2 border-b">{book.id}</td>
-                    <td className="px-4 py-2 border-b font-medium text-gray-800">{book.title}</td>
+                    <td className="px-4 py-2 border-b font-medium text-gray-800">
+                      {book.title}
+                    </td>
                     <td className="px-4 py-2 border-b text-gray-600">{book.author}</td>
                   </tr>
                 ))}
@@ -156,5 +185,5 @@ export default function BorrowReturn() {
         )}
       </div>
     </div>
-  )
+  );
 }
