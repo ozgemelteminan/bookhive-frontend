@@ -145,7 +145,7 @@ export default function Dashboard() {
                   <button
                     onClick={() => returnBorrow(borrow)}
                     disabled={rowLoadingId === borrow.id}
-                    className="shrink-0 bg-green-500 text-white px-3 py-1.5 rounded-lg hover:bg-green-600 text-sm disabled:opacity-60"
+                    className="shrink-0 bg-amber-500 text-white px-3 py-1.5 rounded-lg hover:bg-green-600 text-sm disabled:opacity-60"
                   >
                     {rowLoadingId === borrow.id ? "Returning…" : "Return"}
                   </button>
@@ -167,10 +167,10 @@ export default function Dashboard() {
           {myActiveBorrows.length === 0 ? (
             <p className="text-gray-500 text-sm mb-3">No active borrows.</p>
           ) : (
-            <ul className="mb-4 text-sm space-y-1">
+            <ul className="mb-4 text-sm space-y-1 list-none">
               {myActiveBorrows.map((b) => (
                 <li key={b.id} className="text-gray-700">
-                  • {resolveTitle(b)} (
+                  📖 {resolveTitle(b)} (
                   {b.borrowDate
                     ? new Date(b.borrowDate).toLocaleDateString()
                     : "N/A"}
@@ -187,10 +187,10 @@ export default function Dashboard() {
           {studentHistory.length === 0 ? (
             <p className="text-gray-500 text-sm">No returns yet.</p>
           ) : (
-            <ul className="text-sm space-y-1 max-h-32 overflow-y-auto">
+            <ul className="text-sm space-y-1 max-h-32 overflow-y-auto list-none">
               {studentHistory.map((h, i) => (
                 <li key={i} className="text-gray-700">
-                  • {resolveTitle(h)} (
+                  ✅ {resolveTitle(h)} (
                   {h.returnDate
                     ? new Date(h.returnDate).toLocaleDateString()
                     : "N/A"}
@@ -205,7 +205,7 @@ export default function Dashboard() {
       {/* Reading Tips */}
       <div className="border rounded-xl p-6 bg-white">
         <h2 className="text-lg font-semibold text-gray-800 mb-3">💡 Reading Tips</h2>
-        <ul className="list-disc pl-5 space-y-2 text-gray-700 text-sm">
+        <ul className="list-none space-y-2 text-gray-700 text-sm">
           <li>📖 Read at least 20 minutes a day – small steps lead to big progress.</li>
           <li>✍️ Take notes – writing down key ideas helps you remember better.</li>
           <li>🌍 Explore different genres – discover new worlds and perspectives.</li>
