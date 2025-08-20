@@ -49,7 +49,7 @@ npm run dev
 
 🌐 Open in your browser:
 ```
-http://localhost:5173
+http://localhost:5174
 ```
 
 ⚒️ Build for production:
@@ -154,27 +154,27 @@ library-frontend2/
 ## 🌐 CORS
 
 The backend (`bookhive-backend`) enables **AllowAll CORS policy**.  
-✅ This means the frontend can call the API from any domain (including `localhost:5173`).  
+>✅ This means the frontend can call the API from any domain (including `localhost:5174`).  
 
 <br>
 
 ### 🔑 Login Page
-![Login Screenshot](screenshots/login.png)
+![Login Screenshot](page-pics/login.png)
 
 ### 📝 Register Page
-![Register Screenshot](screenshots/register.png)
+![Register Screenshot](page-pics/register.png)
 
 ### 🏠 Dashboard Page
-![Dashboard Screenshot](screenshots/dashboard.png)
+![Dashboard Screenshot](page-pics/dashboard.png)
 
-### 📚 Books Page
-![Books Screenshot](screenshots/books.png)
-
-### 🏛 Libraries Page
-![Libraries Screenshot](screenshots/libraries.png)
+### 📚 Borrow & Return Page
+![Borrow & Return Screenshot](page-pics/borrow&return.png)
 
 ### 📊 Reports Page
-![Reports Screenshot](screenshots/reports.png)
+![Reports Screenshot](page-pics/reports.png)
+
+### 🏛 Donate Page
+![Donate Screenshot](page-pics/donate.png)
 
 <br>
 
