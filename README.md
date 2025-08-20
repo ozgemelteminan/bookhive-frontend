@@ -2,7 +2,7 @@
 
 A modern **React + Vite** frontend for the 🐝 **BookHive** library system.  
 This application provides a user-friendly interface for students to register, log in, browse libraries & books, borrow/return books, and view reports.  
-It consumes the RESTful API provided by the **[BookHive Backend](https://github.com/ozgemelteminan/bookhive-backend)**.
+>It consumes the RESTful API provided by the **[BookHive Backend](https://github.com/ozgemelteminan/bookhive-backend)**.
 
 <br>
 
