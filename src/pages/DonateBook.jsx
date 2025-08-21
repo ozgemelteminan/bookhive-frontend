@@ -1,41 +1,44 @@
-// src/pages/DonateBook.jsx
 import React, { useState, useEffect } from "react";
 import { api } from "../api.js";
 import { useAuth } from "../auth.jsx";
 
 export default function DonateBook() {
-  const { token, user } = useAuth();
-  const [title, setTitle] = useState("");
-  const [author, setAuthor] = useState("");
-  const [year, setYear] = useState("");
-  const [isbn, setIsbn] = useState("");
-  const [libraryId, setLibraryId] = useState("");
-  const [libraries, setLibraries] = useState([]);
+  const { token, user } = useAuth();                // Get the current user and token from auth 
+  const [title, setTitle] = useState("");           // Book title
+  const [author, setAuthor] = useState("");         // Book author
+  const [year, setYear] = useState("");             // Publication year
+  const [isbn, setIsbn] = useState("");             // ISBN number
+  const [libraryId, setLibraryId] = useState("");   // Selected library ID
+  const [libraries, setLibraries] = useState([]);   // List of available libraries
 
-  const [loading, setLoading] = useState(false);
-  const [result, setResult] = useState("");
-  const [err, setErr] = useState("");
+  const [loading, setLoading] = useState(false);    // Loading state during request
+  const [result, setResult] = useState("");         // Success message
+  const [err, setErr] = useState("");               // Error message
 
-  // Kütüphaneleri yükle
+
+// Load all libraries from the API
   useEffect(() => {
-    let alive = true;
+    let alive = true;   // Prevent state update if component is unmounted
     (async () => {
       try {
         const libs = await api("/api/Libraries", { method: "GET", token });
-        if (alive) setLibraries(Array.isArray(libs) ? libs : []);
+        if (alive) setLibraries(Array.isArray(libs) ? libs : []);   // Store libraries in state
       } catch (e) {
-        if (alive) setErr(e.message);
+        if (alive) setErr(e.message); // Show error if fetch fails
       }
     })();
-    return () => (alive = false);
+    return () => (alive = false);     // Cleanup function
   }, [token]);
 
+
+  // Submit book donation form
   const handleSubmit = async (e) => {
-    e.preventDefault();
+    e.preventDefault();   // Stop page reload
     setLoading(true);
     setErr("");
     setResult("");
     try {
+      // Send POST request with book details
       const res = await api("/api/Books", {
         method: "POST",
         token,
@@ -47,16 +50,18 @@ export default function DonateBook() {
           libraryId: libraryId ? Number(libraryId) : null,
         },
       });
-      setResult(`🎉 Book donated successfully! ID: ${res.id}`);
+      setResult(`🎉 Book donated successfully! ID: ${res.id}`);  // Show success
+
+      // Reset form fields
       setTitle("");
       setAuthor("");
       setYear("");
       setIsbn("");
       setLibraryId("");
     } catch (e) {
-      setErr(e.message);
+      setErr(e.message);  // Show error if request fails
     } finally {
-      setLoading(false);
+      setLoading(false);  // Stop loading spinner
     }
   };
 

@@ -1,25 +1,32 @@
-// src/pages/BorrowReturn.jsx
 import React, { useState, useEffect } from "react";
 import { api } from "../api.js";
 import { useAuth } from "../auth.jsx";
 
 export default function BorrowReturn() {
+
+  // Get user info and token from auth system
   const { token, user } = useAuth();
+
+  // Save student + book information in state
   const [studentId, setStudentId] = useState("");
   const [studentName, setStudentName] = useState("");
   const [bookId, setBookId] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+
+  // Lists of books and student’s borrowed books
   const [books, setBooks] = useState([]);
   const [studentBorrows, setStudentBorrows] = useState([]);
 
-  // Login olan öğrencinin bilgileri
+
+
+  // When user logs in, set student info automatically
   useEffect(() => {
     setStudentId(user?.id ? String(user.id) : "");
     setStudentName(user?.fullName || "");
   }, [user]);
 
-  // Kitapları getir
+  // Load ALL books from API
   useEffect(() => {
     let alive = true;
     (async () => {
@@ -30,15 +37,17 @@ export default function BorrowReturn() {
         console.error(e);
       }
     })();
-    return () => (alive = false);
+    return () => (alive = false);  // cleanup if component unmounts
   }, [token]);
 
-  // Öğrencinin aktif borrows bilgisini getir
+  // Load this student’s ACTIVE borrowed books
   useEffect(() => {
     let alive = true;
     (async () => {
       try {
         const sb = await api("/api/StudentBooks", { method: "GET", token });
+
+        // Filter only books borrowed by the logged-in student
         const my = (Array.isArray(sb) ? sb : []).filter(
           (x) => String(x.studentId) === String(user?.id)
         );
@@ -48,9 +57,9 @@ export default function BorrowReturn() {
       }
     })();
     return () => (alive = false);
-  }, [token, user?.id, loading]); // borrow/return sonrası yenilensin
+  }, [token, user?.id, loading]); // reload when borrow/return happens
 
-  // Borrow
+  // orrow a book
   const doBorrow = async () => {
     setLoading(true);
     setError("");
@@ -70,14 +79,18 @@ export default function BorrowReturn() {
     }
   };
 
-  // Return
+  // Return a book
   const doReturn = async () => {
     setLoading(true);
     setError("");
     try {
+
+      // First, get all student-book records
       const all = await api("/api/StudentBooks", { method: "GET", token });
       const list = Array.isArray(all) ? all : [];
       const match = list
+
+      // Find the latest matching borrow record
         .filter(
           (x) =>
             String(x.studentId) === String(studentId) &&
@@ -89,7 +102,7 @@ export default function BorrowReturn() {
         throw new Error("This student has no active borrow for the selected book.");
       }
 
-      // ✅ Backend {studentId}/{bookId} bekliyor
+      // Backend expects DELETE with {studentId}/{bookId}
       await api(`/api/StudentBooks/${studentId}/${bookId}`, {
         method: "DELETE",
         token,
@@ -101,6 +114,8 @@ export default function BorrowReturn() {
     }
   };
 
+
+  // Render UI
   return (
     <div className="w-full max-w-3xl space-y-6">
       {/* Borrow / Return */}

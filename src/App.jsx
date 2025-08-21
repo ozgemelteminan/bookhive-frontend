@@ -1,4 +1,3 @@
-// App.jsx
 import PrivateRoute from './PrivateRoute.jsx'
 import React from 'react'
 import { Routes, Route, Navigate, Outlet, Link } from 'react-router-dom'
@@ -10,9 +9,10 @@ import BorrowReturn from './pages/BorrowReturn.jsx'
 import Reports from './pages/Reports.jsx'
 import DonateBook from './pages/DonateBook.jsx'
 
-// 🐝 Petek overlay
+
+//  Honeycomb overlay background
 function HoneycombOverlay({
-  stroke = '#fff9c4',      // daha açık sarı (limon kremi tonunda)
+  stroke = '#fff9c4',      
   strokeOpacity = 0.35,
   globalOpacity = 0.22,
   scale = 1,
@@ -46,6 +46,8 @@ function HoneycombOverlay({
   )
 }
 
+
+// Layout shell with header + main background
 function Shell() {
   const { user, logout } = useAuth()
   return (
@@ -89,6 +91,7 @@ function Shell() {
   )
 }
 
+// Main App routes
 export default function App() {
   return (
     <Routes>

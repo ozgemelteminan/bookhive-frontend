@@ -5,6 +5,7 @@ import App from './App.jsx'
 import { AuthProvider } from './auth.jsx'
 import './styles.css'
 
+// Entry point of the React application
 ReactDOM.createRoot(document.getElementById('root')).render(
   <React.StrictMode>
     <BrowserRouter>
