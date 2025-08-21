@@ -2,7 +2,7 @@ import React, { useState } from "react"
 import { useNavigate, Link } from "react-router-dom"
 import { useAuth } from "../auth.jsx"
 
-// 🐝 Ortak Petek Overlay
+// This component draws a honeycomb (bee hive style) background pattern
 function HoneycombOverlay({
   stroke = "#fff9c4",
   strokeOpacity = 0.35,
@@ -38,27 +38,31 @@ function HoneycombOverlay({
   )
 }
 
+// State variables to store form data
 export default function Login() {
-  const [email, setEmail] = useState("")
-  const [password, setPassword] = useState("")
-  const [err, setErr] = useState("")
-  const { login } = useAuth()
-  const navigate = useNavigate()
+  const [email, setEmail] = useState("")       // user email input
+  const [password, setPassword] = useState("") // user password input
+  const [err, setErr] = useState("")           // error message if login fails
+  const { login } = useAuth()                  // get login function from auth context
+  const navigate = useNavigate()               // to redirect user after login
 
+
+  // When the user submits the form
   const handleSubmit = async (e) => {
-    e.preventDefault()
-    setErr("")
+    e.preventDefault() // prevent page refresh
+    setErr("")         // reset error message
     try {
-      await login(email, password)
-      navigate("/dashboard")
+      await login(email, password)    // try to login with provided credentials
+      navigate("/dashboard")          // if successful, go to dashboard
     } catch (e) {
-      setErr(e.message || "Login failed")
+      setErr(e.message || "Login failed")  // if error, show error message
     }
   }
 
+  // What the component renders (UI)
   return (
     <div className="relative flex items-center justify-center min-h-screen overflow-hidden bg-gradient-to-br from-amber-600 via-orange-500 to-yellow-500">
-      {/* 🐝 Petek overlay */}
+      {/* 🐝 Honeycomb overlay */}
       <HoneycombOverlay />
 
       {/* Card */}

@@ -1,27 +1,34 @@
-// src/pages/Dashboard.jsx
 import React, { useEffect, useState } from "react";
 import { api } from "../api.js";
 import { useAuth } from "../auth.jsx";
 
 export default function Dashboard() {
+  // Get user info and token from auth context
   const { token, user } = useAuth();
-  const [books, setBooks] = useState([]);
-  const [activeBorrows, setActiveBorrows] = useState([]);
-  const [studentHistory, setStudentHistory] = useState([]);
-  const [loading, setLoading] = useState(false);
-  const [rowLoadingId, setRowLoadingId] = useState(null);
-  const [err, setErr] = useState("");
 
+  // Keep data in state (memory)
+  const [books, setBooks] = useState([]);                     // all books in library
+  const [activeBorrows, setActiveBorrows] = useState([]);     // all active borrowings
+  const [studentHistory, setStudentHistory] = useState([]);   // all returned books
+  const [loading, setLoading] = useState(false);              // loading state for API
+  const [rowLoadingId, setRowLoadingId] = useState(null);     // track which book is returning
+  const [err, setErr] = useState("");                         // error message if API fails
+
+
+  // Load fresh data from backend
   const refreshData = async () => {
     setErr("");
     setLoading(true);
     try {
+      // Get all books
       const b = await api("/api/Books", { method: "GET", token });
       setBooks(Array.isArray(b) ? b : []);
 
+      // Get all active borrows
       const active = await api("/api/StudentBooks", { method: "GET", token });
       setActiveBorrows(Array.isArray(active) ? active : []);
 
+      // Get history for current user
       if (user?.id) {
         const hist = await api(`/api/StudentBooks/history/${user.id}`, {
           method: "GET",
@@ -36,15 +43,20 @@ export default function Dashboard() {
     }
   };
 
+  // Run when component loads or when user changes
   useEffect(() => {
     refreshData();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [token, user?.id]);
 
+  // Get only the active borrows of this user
   const myActiveBorrows = activeBorrows.filter(
     (x) => String(x.studentId) === String(user?.id)
   );
 
+
+  // Find a title of book (use borrow.bookTitle OR lookup by id)
   const resolveTitle = (borrow) => {
     if (borrow?.bookTitle) return borrow.bookTitle;
     const found = books.find((b) => String(b.id) === String(borrow.bookId));
@@ -52,15 +64,19 @@ export default function Dashboard() {
     return `Book #${borrow.bookId}`;
   };
 
+  // Return (give back) a borrowed book
   const returnBorrow = async (borrow) => {
     if (!user?.id) return;
-    setRowLoadingId(borrow.id);
+    setRowLoadingId(borrow.id);     // mark which book is being returned
     setErr("");
     try {
+      // API call to delete borrow
       await api(`/api/StudentBooks/${user.id}/${borrow.bookId}`, {
         method: "DELETE",
         token,
       });
+
+      // Remove from active borrows and add to history
       setActiveBorrows((prev) => prev.filter((x) => x.id !== borrow.id));
       setStudentHistory((prev) => [
         ...prev,

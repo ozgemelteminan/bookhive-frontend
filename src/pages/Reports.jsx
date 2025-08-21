@@ -1,31 +1,33 @@
-// src/pages/Reports.jsx
 import React, { useEffect, useState } from "react";
 import { api } from "../api.js";
 import { useAuth } from "../auth.jsx";
 
 export default function Reports() {
   const { token, user } = useAuth();
-  const [books, setBooks] = useState([]);
-  const [libraries, setLibraries] = useState([]);
-  const [studentHistory, setStudentHistory] = useState([]);
-  const [loading, setLoading] = useState(false);
-  const [err, setErr] = useState("");
+
+  // State variables for storing data
+  const [books, setBooks] = useState([]); // All books
+  const [libraries, setLibraries] = useState([]); // All libraries
+  const [studentHistory, setStudentHistory] = useState([]); // Borrow history of logged-in student
+  const [loading, setLoading] = useState(false); // Loading state
+  const [err, setErr] = useState("");           // Error message
 
   useEffect(() => {
-    let alive = true;
+    let alive = true; // To prevent state updates if component unmounts
+
     (async () => {
       setErr("");
       setLoading(true);
       try {
-        // tüm kitaplar
+        // Fetch all books
         const b = await api("/api/Books", { method: "GET", token });
         if (alive) setBooks(Array.isArray(b) ? b : []);
 
-        // tüm kütüphaneler
+        // Fetch all libraries
         const libs = await api("/api/Libraries", { method: "GET", token });
         if (alive) setLibraries(Array.isArray(libs) ? libs : []);
 
-        // öğrenci geçmişi
+        // Fetch student borrow history (only if logged in)
         if (user?.id) {
           const hist = await api(`/api/StudentBooks/history/${user.id}`, {
             method: "GET",
@@ -34,20 +36,28 @@ export default function Reports() {
           if (alive) setStudentHistory(Array.isArray(hist) ? hist : []);
         }
       } catch (e) {
+
+        // Store error if request fails
         if (alive) setErr(e.message);
+        
       } finally {
+
+        // End loading state
         if (alive) setLoading(false);
       }
     })();
-    return () => (alive = false);
+
+
+    return () => (alive = false);  // Cleanup function on unmount
   }, [token, user?.id]);
 
-  // kitapları libraryId'ye göre grupla
+  // Group books by libraryId so each library shows its own books
   const booksByLibrary = libraries.map((lib) => ({
     ...lib,
     books: books.filter((b) => b.libraryId === lib.id),
   }));
 
+  
   return (
     <div className="w-full max-w-5xl bg-white rounded-2xl shadow-lg p-8 space-y-6">
       <h1 className="text-2xl font-bold text-gray-800">📊 Reports</h1>

@@ -2,7 +2,7 @@ import React, { useState } from "react"
 import { Link, useNavigate } from "react-router-dom"
 import { api } from "../api.js"
 
-// 🐝 Ortak Petek Overlay
+// Shared Honeycomb Overlay Background
 function HoneycombOverlay({
   stroke = "#fff9c4",
   strokeOpacity = 0.35,
@@ -38,27 +38,38 @@ function HoneycombOverlay({
   )
 }
 
+// Register Component 
 export default function Register() {
-  const nav = useNavigate()
-  const [fullName, setFullName] = useState("")
-  const [email, setEmail] = useState("")
-  const [password, setPassword] = useState("")
-  const [loading, setLoading] = useState(false)
-  const [error, setError] = useState("")
+  const nav = useNavigate()                     // For navigation after success
 
+  // State tanımları
+  const [fullName, setFullName] = useState("")  // State for user full name
+  const [email, setEmail] = useState("")        // State for user email
+  const [password, setPassword] = useState("")  // State for user password
+  const [loading, setLoading] = useState(false) // Loading state for button
+  const [error, setError] = useState("")        // Error message state
+
+
+  // Handle form submission
   const onSubmit = async (e) => {
     e.preventDefault()
     setLoading(true)
     setError("")
+
     try {
+      // Send registration data to backend API
       await api("/api/Students/register", {
         method: "POST",
         body: { fullName, email, password },
       })
+
+      // Redirect to login page if successful
       nav("/login")
     } catch (err) {
+      // Show error if API call fails
       setError(err.message)
     } finally {
+      // Always stop loading after request
       setLoading(false)
     }
   }
