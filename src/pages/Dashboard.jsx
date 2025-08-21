@@ -145,7 +145,7 @@ export default function Dashboard() {
                   <button
                     onClick={() => returnBorrow(borrow)}
                     disabled={rowLoadingId === borrow.id}
-                    className="shrink-0 bg-amber-500 text-white px-3 py-1.5 rounded-lg hover:bg-green-600 text-sm disabled:opacity-60"
+                    className="shrink-0 bg-amber-500 text-white px-3 py-1.5 rounded-lg hover:bg-amber-600 text-sm disabled:opacity-60"
                   >
                     {rowLoadingId === borrow.id ? "Returning…" : "Return"}
                   </button>
