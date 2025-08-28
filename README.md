@@ -51,7 +51,7 @@ npm run dev
 ```
 http://localhost:5174
 ```
-> For example, you should paste the URL that appears in your terminal.
+> This is an example, you should paste the URL that appears in your terminal.
 
 ⚒️ Build for production:
 ```bash
@@ -155,7 +155,8 @@ library-frontend2/
 ## 🌐 CORS
 
 The backend (`bookhive-backend`) enables **AllowAll CORS policy**.  
->✅ This means the frontend can call the API from any domain (including `localhost:5174`).  
+>✅ This means the frontend can call the API from any domain (including the backend URL: `localhost:5174`).
+> You also need to deploy the `backend` in order to run the frontend!  
 
 <br>
 
