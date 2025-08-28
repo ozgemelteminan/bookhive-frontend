@@ -51,6 +51,7 @@ npm run dev
 ```
 http://localhost:5174
 ```
+> For example, you should paste the URL that appears in your terminal.
 
 ⚒️ Build for production:
 ```bash
